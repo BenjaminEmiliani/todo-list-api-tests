@@ -30,8 +30,10 @@ public class TodoManagerTests {
 	private String urlPath = "http://localhost:4567/todos";
 
 	/**
+	 * Type: Capability
 	 * For GET /todos
 	 * Get all todos in the system
+	 * @author benjaminemiliani
 	 */
 	@Test
 	public void testGetAllTodos() {
@@ -45,10 +47,12 @@ public class TodoManagerTests {
 		assertTrue(response.getBody().contains("todos"));
 	}
 	
-	/*
+	/**
+	 * Type: Capability
 	 * For POST /todos with message body containing "title" : ""
 	 * Create a new todo entity with the minimum requirement
 	 * It is then delete to not alter state of the system after execution
+	 * @author benjaminemiliani
 	 */
 	@Test
 	public void createTodo() {
@@ -63,9 +67,52 @@ public class TodoManagerTests {
 		deleteTodoWithId(idString);
 	}
 	
-	/*
+	/**
+	 * Type: Wrong body format
+	 * For POST /todos with XML message body mal formatted
+	 * Create a new todo entity not successful
+	 * @author benjaminemiliani
+	 */
+	@Test
+	public void createTodoWithWrongXML() {
+		headers.setContentType(MediaType.APPLICATION_XML);
+		String xmlString = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+				+ "<todo>\n" + 
+				"  <doneStatus>true</doneStatus>\n" + 
+				"  <description>veniam, quis nostrua</description>\n" + 
+				"  <id>null</id>\n" + 
+				"</todo>";
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
+		HttpEntity<?> entity = new HttpEntity<Object>(xmlString, headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.POST, entity, String.class); 
+		assertEquals(response.getStatusCode().toString(), "400 BAD_REQUEST");
+		
+	}
+	
+	/**
+	 * Type: Bug/Issue
+	 * For POST /todos using query parameters
+	 * Create a new todo entity not successful
+	 * @author benjaminemiliani
+	 */
+	@Test
+	public void createTodoWithUrlQueryParams() {
+		headers.setContentType(MediaType.APPLICATION_XML);
+		urlPath.concat("?title=interview");
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
+		HttpEntity<?> entity = new HttpEntity<Object>(headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.POST, entity, String.class); 
+		assertEquals(response.getStatusCode().toString(), "400 BAD_REQUEST");
+		
+	}
+	
+	/**
+	 * Type: wrong format of JSON payload
 	 * For POST /todos without message body containing "title" : ""
 	 * Create a new todo entity without the minimum requirement
+	 * @author benjaminemiliani
 	 */
 	@Test
 	public void createTodoWithNullTitle() {
@@ -79,9 +126,11 @@ public class TodoManagerTests {
 		assertTrue(response.getBody().contains("{\"errorMessages\":[\"title : field is mandatory\"]}"));
 	}
 	
-	/*
+	/**
+	 * Type: Capability
 	 * For GET /todos/:id 
 	 * Get a todo entity with "id": id
+	 * @author benjaminemiliani
 	 */
 	@Test
 	public void getTodoWithId() {
@@ -95,9 +144,36 @@ public class TodoManagerTests {
 		assertTrue(response.getBody().toString().contains("{\"id\":\"1\"}"));
 	}
 	
-	/*
-	 * For GET /todos/:id 
+	
+	/**
+	 * Type: capability
+	 * For POST /todos/:id 
+	 * Update a specific instances of todo using a id with a body containing the fields to amend
+	 * @author benjaminemiliani
+	 */
+	@Test
+	public void updateTodo() {
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		urlPath = urlPath.concat("/1");
+		String requestJson = "{\"doneStatus\":true}";
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
+		HttpEntity<?> entity = new HttpEntity<Object>(requestJson, headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.POST, entity, String.class); 
+		assertEquals(response.getStatusCode().toString(), "200 OK");
+		
+		//Undo the change
+		String requestJson2 = "{\"doneStatus\":false}";
+		entity = new HttpEntity<Object>(requestJson2, headers);
+		 response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.POST, entity, String.class); 
+	}
+	
+	/**
+	 * Type: Capability
+	 * For DELETE /todos/:id 
 	 * Get a todo entity with "id": id
+	 * @author benjaminemiliani
 	 */
 	@Test
 	public void deleteTodoWithId() {
@@ -108,9 +184,150 @@ public class TodoManagerTests {
 		ResponseEntity<String> response = restTemplate.exchange(
 				builder.toUriString(),HttpMethod.DELETE, entity, String.class); 
 		assertEquals(response.getStatusCode().toString(), "200 OK");
-		
 	}
 	
+	/**
+	 * Type: Capability
+	 * For GET /todos/:id/tasksof
+	 * Get all the project entities related to todo, 
+	 * with given id, by the relationship named tasksof
+	 * @author benjaminemiliani
+	 */
+	@Test
+	public void getProjectsWithTodoId() {
+		headers.setContentType(MediaType.APPLICATION_JSON);	
+		urlPath = urlPath.concat("/1/tasksof");
+		
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
+		HttpEntity<?> entity = new HttpEntity<Object>(headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.GET, entity, String.class); 
+		assertEquals(response.getStatusCode().toString(), "200 OK");
+		assertTrue(response.getBody().toString().contains("{\"id\":\"1\"}"));
+	}
+	
+
+	/**
+	 * Type: Bug
+	 * For GET /todos/:id/tasksof
+	 * Get all the project entities related to todo, 
+	 * with a non-existing id, by the relationship named tasksof
+	 * @author benjaminemiliani
+	 */
+	@Test
+	public void getProjectsWithInvalidTodoId() {
+		headers.setContentType(MediaType.APPLICATION_JSON);	
+		//todo with id = 21212921 is never creatd during tests nor in intial setup 
+		urlPath = urlPath.concat("/21212921/tasksof");
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
+		HttpEntity<?> entity = new HttpEntity<Object>(headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.GET, entity, String.class); 
+		//The resonse status should be 404 Not Found
+		assertEquals(response.getStatusCode().toString(), "200 OK");
+		assertTrue(response.getBody().toString().contains("{\"id\":\"1\"}"));
+	}
+	
+	/**
+	 * Type: Capability
+	 * For POST /todos/:id/tasksof
+	 * Make a specific todo a tasksof a specific project using JSON payload
+	 * @author benjaminemiliani
+	 */
+	@Test
+	public void makeTasksofWithTodoId() {
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		// Create a new todo for testing
+		String idString = getTodoId();
+		urlPath = urlPath.concat("/" + idString + "/tasksof");
+		String requestJson = "{\"id\":\"1\"}";
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
+		HttpEntity<?> entity = new HttpEntity<Object>(requestJson, headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.POST, entity, String.class); 
+		assertEquals(response.getStatusCode().toString(), "201 CREATED");
+		// Delete newly created todo after test assertion
+		deleteTodoWithId(idString);
+	}
+	
+	/**
+	 * Type: Capability
+	 * For DELETE /todos/:id/tasksof
+	 * Delete the instance of the relationship named tasksof 
+	 * between todo and project using the :id
+	 * @author benjaminemiliani
+	 */
+	@Test
+	public void deleteTasksofWithId() {
+		String idString = makeTasksof();
+		urlPath = urlPath.concat("/1");
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
+		HttpEntity<?> entity = new HttpEntity<Object>(headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.DELETE, entity, String.class); 
+		assertEquals(response.getStatusCode().toString(), "200 OK");
+		deleteTodoWithId(idString);
+	}
+	
+	/**
+	 * Type: Capability
+	 * For GET /todos/:id/categories
+	 * Get all the category items related to todo, with given id, by the relationship named categories
+	 * @author benjaminemiliani
+	 */
+	@Test
+	public void getCategoriesWithTodoId() {
+		headers.setContentType(MediaType.APPLICATION_JSON);	
+		urlPath = urlPath.concat("/1/categories");
+		
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
+		HttpEntity<?> entity = new HttpEntity<Object>(headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.GET, entity, String.class); 
+		assertEquals(response.getStatusCode().toString(), "200 OK");
+		assertTrue(response.getBody().toString().contains("{\"categories\":"));
+	}
+	
+	/**
+	 * Type: Capability
+	 * For POST /todos/:id/categories
+	 * Create an create an instance of a relationship named categories between todo instance :id and the category instance
+	 * @author benjaminemiliani
+	 */
+	@Test
+	public void makeCategoriesWithTodoId() {
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		// Create a new todo for testing
+		String idString = getTodoId();
+		urlPath = urlPath.concat("/" + idString + "/categories");
+		String requestJson = "{\"id\":\"1\"}";
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
+		HttpEntity<?> entity = new HttpEntity<Object>(requestJson, headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.POST, entity, String.class); 
+		assertEquals(response.getStatusCode().toString(), "201 CREATED");
+		// Delete newly created todo after test assertion
+		deleteTodoWithId(idString);
+	}
+	
+
+	
+	
+	
+		/******************HELPER METHODS*********************/
+	
+	public String makeTasksof() {
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		// Create a new todo for testing
+		String idString = getTodoId();
+		urlPath = urlPath.concat("/" + idString + "/tasksof");
+		String requestJson = "{\"id\":\"1\"}";
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
+		HttpEntity<?> entity = new HttpEntity<Object>(requestJson, headers);
+		ResponseEntity<String> response = restTemplate.exchange(
+				builder.toUriString(),HttpMethod.POST, entity, String.class); 
+		return idString;
+	}
 	
 	/*
 	 Helper method to create a new todo and return its id
@@ -128,10 +345,11 @@ public class TodoManagerTests {
 	
 	/**
 	 * Helper method to delete a todo created for testing
+	 * @author benjaminemiliani
 	 * @param id: id of todo to be deleted
 	 */
 	public void deleteTodoWithId(String id) {
-		urlPath = urlPath.concat("/" + id);
+		urlPath = "http://localhost:4567/todos/" + id ;
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
 		HttpEntity<?> entity = new HttpEntity<Object>(headers);
 		ResponseEntity<String> response = restTemplate.exchange(
@@ -139,6 +357,7 @@ public class TodoManagerTests {
 	}
 	
 	/**
+	 * @author benjaminemiliani
 	 * @param json: string in json format
 	 * @return array of strings containing each field consecutively
 	 */
