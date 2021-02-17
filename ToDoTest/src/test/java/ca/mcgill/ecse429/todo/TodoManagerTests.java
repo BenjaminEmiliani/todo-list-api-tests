@@ -36,7 +36,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void testGetAllTodos() {
+	public void test_01GetAllTodos() {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
 		HttpEntity<?> entity = new HttpEntity<Object>(headers);
@@ -55,7 +55,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void createTodo() {
+	public void test_02CreateTodo() {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		String requestJson = "{\"title\":\"Interview\"}";
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
@@ -74,7 +74,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void createTodoWithWrongXML() {
+	public void test_03createTodoWithWrongXML() {
 		headers.setContentType(MediaType.APPLICATION_XML);
 		String xmlString = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
 				+ "<todo>\n" + 
@@ -97,7 +97,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void createTodoWithUrlQueryParams() {
+	public void test_04createTodoWithUrlQueryParams() {
 		headers.setContentType(MediaType.APPLICATION_XML);
 		urlPath.concat("?title=interview");
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
@@ -105,7 +105,6 @@ public class TodoManagerTests {
 		ResponseEntity<String> response = restTemplate.exchange(
 				builder.toUriString(),HttpMethod.POST, entity, String.class); 
 		assertEquals(response.getStatusCode().toString(), "400 BAD_REQUEST");
-		
 	}
 	
 	/**
@@ -115,7 +114,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void createTodoWithNullTitle() {
+	public void test_05createTodoWithNullTitle() {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		String requestJson = "{\"description\":\"Interview John Doe\"}";
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
@@ -133,7 +132,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void getTodoWithId() {
+	public void test_06getTodoWithId() {
 		headers.setContentType(MediaType.APPLICATION_JSON);	
 		urlPath = urlPath.concat("/1");
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
@@ -152,7 +151,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void updateTodo() {
+	public void test_07updateTodo() {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		urlPath = urlPath.concat("/1");
 		String requestJson = "{\"doneStatus\":true}";
@@ -176,7 +175,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void deleteTodoWithId() {
+	public void test_08deleteTodoWithId() {
 		String idString = getTodoId();
 		urlPath = urlPath.concat("/" + idString);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
@@ -194,7 +193,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void getProjectsWithTodoId() {
+	public void test_09getProjectsWithTodoId() {
 		headers.setContentType(MediaType.APPLICATION_JSON);	
 		urlPath = urlPath.concat("/1/tasksof");
 		
@@ -215,7 +214,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void getProjectsWithInvalidTodoId() {
+	public void test_10getProjectsWithInvalidTodoId() {
 		headers.setContentType(MediaType.APPLICATION_JSON);	
 		//todo with id = 21212921 is never creatd during tests nor in intial setup 
 		urlPath = urlPath.concat("/21212921/tasksof");
@@ -235,7 +234,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void makeTasksofWithTodoId() {
+	public void test_11makeTasksofWithTodoId() {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		// Create a new todo for testing
 		String idString = getTodoId();
@@ -258,7 +257,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void deleteTasksofWithId() {
+	public void test_12deleteTasksofWithId() {
 		String idString = makeTasksof();
 		urlPath = urlPath.concat("/1");
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(urlPath);
@@ -276,7 +275,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void getCategoriesWithTodoId() {
+	public void test_13getCategoriesWithTodoId() {
 		headers.setContentType(MediaType.APPLICATION_JSON);	
 		urlPath = urlPath.concat("/1/categories");
 		
@@ -295,7 +294,7 @@ public class TodoManagerTests {
 	 * @author benjaminemiliani
 	 */
 	@Test
-	public void makeCategoriesWithTodoId() {
+	public void test_14makeCategoriesWithTodoId() {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		// Create a new todo for testing
 		String idString = getTodoId();
