@@ -6,6 +6,7 @@ plugins {
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
+
 sourceCompatibility = '1.8'
 
 repositories {
@@ -14,7 +15,17 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation ('org.springframework.boot:spring-boot-starter-test', 'junit:junit:4.12')
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	
+	testImplementation 'junit:junit:4.12'
+	testImplementation 'info.cukes:cucumber-java:1.1.8'
+	testImplementation 'info.cukes:cucumber-junit:1.1.8'
+	
+   	testImplementation "io.cucumber:cucumber-java:4.2.0"
+    testImplementation "io.cucumber:cucumber-junit:4.2.0"
+    
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.5.0"
+    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:5.5.0"
 }
 
 test {
