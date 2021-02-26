@@ -26,6 +26,7 @@ dependencies {
     
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.5.0"
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:5.5.0"
+    testCompile group: 'io.cucumber', name: 'cucumber-spring', version: '4.3.0'
 }
 
 test {
